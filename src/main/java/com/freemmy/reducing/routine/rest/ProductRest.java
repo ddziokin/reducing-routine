@@ -2,22 +2,21 @@ package com.freemmy.reducing.routine.rest;
 
 import com.freemmy.reducing.routine.domain.Product;
 import com.freemmy.reducing.routine.repository.IProductRepository;
-import com.freemmy.reducing.routine.rest.dto.ProductDTO;
+import com.freemmy.reducing.routine.rest.converter.ProductConverter;
+import com.freemmy.reducing.routine.rest.gen.api.ProductsApiDelegate;
+import com.freemmy.reducing.routine.rest.gen.model.CreatedProductDTO;
+import com.freemmy.reducing.routine.rest.gen.model.ProductDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -28,33 +27,28 @@ import java.util.stream.Collectors;
  *
  * @author Dzmitry Dziokin
  */
-@RestController
-@RequestMapping(path = "/products")
+@Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class ProductRest {
+public class ProductRest implements ProductsApiDelegate {
 
-    private final Converter<Product, ProductDTO> domainConverter;
-    private final Converter<ProductDTO, Product> dtoConverter;
     private final IProductRepository productRepository;
+    private final ProductConverter productConverter;
 
-    @GetMapping
-    public ResponseEntity<Page<ProductDTO>> getProducts(@PageableDefault Pageable pageable) {
+    public ResponseEntity<Page<CreatedProductDTO>> getProducts(@PageableDefault Pageable pageable) {
         Page<Product> productPage = productRepository.findAll(pageable);
-        List<ProductDTO> dtoList = productPage.stream()
-                .map(domainConverter::convert)
+        List<CreatedProductDTO> dtoList = productPage.stream()
+                .map(productConverter::toDto)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(new PageImpl<>(dtoList, productPage.getPageable(), productPage.getTotalElements()));
     }
 
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<ProductDTO> getProduct(@PathVariable Long id) {
+    public ResponseEntity<CreatedProductDTO> getProduct(@PathVariable Long id) {
         Product product = productRepository.findById(id).orElseThrow(NoSuchElementException::new);
-        return ResponseEntity.ok(domainConverter.convert(product));
+        return ResponseEntity.ok(productConverter.toDto(product));
     }
 
-    @PostMapping
-    public ResponseEntity<ProductDTO> addProduct(@RequestBody ProductDTO product) {
-        Product result = productRepository.save(dtoConverter.convert(product));
-        return new ResponseEntity<>(domainConverter.convert(result), HttpStatus.CREATED);
+    public ResponseEntity<CreatedProductDTO> addProduct(@RequestBody ProductDTO product) {
+        Product result = productRepository.save(productConverter.toEntity(product));
+        return new ResponseEntity<>(productConverter.toDto(result), HttpStatus.CREATED);
     }
 }

@@ -5,7 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 /**
- * Date: 8/27/2019
+ * Date: 9/9/2019
  *
  * @author Dzmitry Dziokin
  */

@@ -146,7 +146,6 @@ components:
         name:
           type: string
           maxLength: 128
-
     CreatedProduct:
       allOf:
         - $ref: "#/components/schemas/Product"

@@ -5,8 +5,8 @@
   "useBeanValidation": true,
   "useTags": true,
   "delegatePattern": true,
+  "apiPackage": "com.freemmy.reducing.routine.rest.gen.api",
   "modelPackage": "com.freemmy.reducing.routine.rest.gen.model",
   "modelNameSuffix": "DTO",
-  "apiPackage": "com.freemmy.reducing.routine.rest.gen.api",
   "invokerPackage": "com.freemmy.reducing.routine"
 }
